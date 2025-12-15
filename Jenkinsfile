@@ -2,9 +2,9 @@ pipeline {
     agent any
     
     tools {
-        maven 'Maven-3.8'
-        nodejs 'NodeJS-18'
-        jdk 'JDK-17'
+        maven 'maven'
+        nodejs 'nodejs'
+        jdk 'jdk'
     }
     
     environment {
@@ -15,7 +15,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'your-repo-url'
+                git branch: 'main', url: 'https://github.com/RameeZBhai/Revhub_Micro.git'
             }
         }
         
