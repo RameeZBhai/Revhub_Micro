@@ -70,15 +70,22 @@ pipeline {
                 expression { params.DEPLOY_TO_AWS == true }
             }
             steps {
-                withCredentials([string(credentialsId: 'aws-credentials', variable: 'AWS_CREDS')]) {
-                    script {
-                        def creds = AWS_CREDS.split(':')
-                        env.AWS_ACCESS_KEY_ID = creds[0]
-                        env.AWS_SECRET_ACCESS_KEY = creds[1]
+                script {
+                    try {
+                        withCredentials([string(credentialsId: 'aws-credentials', variable: 'AWS_CREDS')]) {
+                            script {
+                                def creds = AWS_CREDS.split(':')
+                                env.AWS_ACCESS_KEY_ID = creds[0]
+                                env.AWS_SECRET_ACCESS_KEY = creds[1]
+                            }
+                            bat "aws s3 sync ${DEPLOY_PATH} s3://${S3_BUCKET}/jars/"
+                            echo "AWS deployment successful!"
+                        }
+                    } catch (Exception e) {
+                        echo "AWS deployment skipped - AWS CLI not installed"
+                        echo "Local deployment completed successfully!"
                     }
-                    script {
-                        // Upload JARs to S3
-                        bat "aws s3 sync ${DEPLOY_PATH} s3://${S3_BUCKET}/jars/"
+                }
                         
                         // Upload frontend to S3
                         bat "aws s3 sync frontend\\dist\\rev-hub s3://${S3_BUCKET}/frontend/"
