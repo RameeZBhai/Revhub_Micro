@@ -5,6 +5,7 @@ pipeline {
         DEPLOY_PATH = 'C:\\RevHub\\deploy'
         AWS_REGION = 'us-east-1'
         S3_BUCKET = 'revhub-deployment'
+        OPENSEARCH_ENDPOINT = 'search-revhub-search-xyz.us-east-1.es.amazonaws.com'
     }
     
     stages {
@@ -70,8 +71,29 @@ pipeline {
             steps {
                 withCredentials([aws(credentialsId: 'aws-credentials', region: "${AWS_REGION}")]) {
                     script {
+                        // Upload JARs to S3
                         bat "aws s3 sync ${DEPLOY_PATH} s3://${S3_BUCKET}/jars/"
+                        
+                        // Upload frontend to S3
                         bat "aws s3 sync frontend\\dist\\rev-hub s3://${S3_BUCKET}/frontend/"
+                        
+                        // Upload deployment script
+                        bat "aws s3 cp deploy-aws.sh s3://${S3_BUCKET}/scripts/"
+                        
+                        // Deploy to EC2 via SSM (if EC2_INSTANCE_ID is set)
+                        script {
+                            if (env.EC2_INSTANCE_ID) {
+                                bat """
+                                    aws ssm send-command ^
+                                    --instance-ids ${env.EC2_INSTANCE_ID} ^
+                                    --document-name "AWS-RunShellScript" ^
+                                    --parameters "commands=['aws s3 cp s3://${S3_BUCKET}/scripts/deploy-aws.sh /tmp/ && chmod +x /tmp/deploy-aws.sh && /tmp/deploy-aws.sh']"
+                                """
+                            }
+                        }
+                        
+                        echo "AWS Deployment completed!"
+                        echo "Frontend: https://${S3_BUCKET}.s3.amazonaws.com/frontend/index.html"
                     }
                 }
             }
