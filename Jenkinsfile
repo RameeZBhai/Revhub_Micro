@@ -1,15 +1,8 @@
 pipeline {
     agent any
     
-    tools {
-        maven 'maven'
-        nodejs 'nodejs'
-        jdk 'jdk'
-    }
-    
     environment {
         DEPLOY_PATH = 'C:\\RevHub\\deploy'
-        DB_PASSWORD = credentials('db-password')
     }
     
     stages {
@@ -38,22 +31,14 @@ pipeline {
             steps {
                 dir('frontend') {
                     bat 'npm install'
-                    bat 'ng build --configuration production'
+                    bat 'ng build'
                 }
-            }
-        }
-        
-        stage('Stop Services') {
-            steps {
-                bat 'taskkill /F /IM java.exe || exit 0'
-                bat 'timeout /t 5'
             }
         }
         
         stage('Deploy') {
             steps {
                 script {
-                    // Copy JARs to deployment directory
                     bat "if not exist ${DEPLOY_PATH} mkdir ${DEPLOY_PATH}"
                     
                     def services = ['api-gateway', 'auth-service', 'user-service', 'post-service', 
@@ -63,28 +48,21 @@ pipeline {
                         bat "copy microservices\\${service}\\target\\*.jar ${DEPLOY_PATH}\\"
                     }
                     
-                    // Copy frontend build
-                    bat "xcopy /E /I /Y frontend\\dist\\* ${DEPLOY_PATH}\\frontend\\"
-                    
-                    // Start services
-                    bat "start /B java -jar ${DEPLOY_PATH}\\api-gateway-*.jar"
-                    bat "timeout /t 10"
-                    bat "start /B java -jar ${DEPLOY_PATH}\\auth-service-*.jar"
-                    bat "start /B java -jar ${DEPLOY_PATH}\\user-service-*.jar"
-                    bat "start /B java -jar ${DEPLOY_PATH}\\post-service-*.jar"
-                    bat "start /B java -jar ${DEPLOY_PATH}\\chat-service-*.jar"
-                    bat "start /B java -jar ${DEPLOY_PATH}\\follow-service-*.jar"
-                    bat "start /B java -jar ${DEPLOY_PATH}\\notification-service-*.jar"
-                    bat "start /B java -jar ${DEPLOY_PATH}\\search-service-*.jar"
+                    bat "start /B java -jar ${DEPLOY_PATH}\\api-gateway-1.0.0.jar"
+                    sleep 10
+                    bat "start /B java -jar ${DEPLOY_PATH}\\auth-service-1.0.0.jar"
+                    bat "start /B java -jar ${DEPLOY_PATH}\\user-service-1.0.0.jar"
+                    bat "start /B java -jar ${DEPLOY_PATH}\\post-service-1.0.0.jar"
+                    bat "start /B java -jar ${DEPLOY_PATH}\\chat-service-1.0.0.jar"
+                    bat "start /B java -jar ${DEPLOY_PATH}\\follow-service-1.0.0.jar"
+                    bat "start /B java -jar ${DEPLOY_PATH}\\notification-service-1.0.0.jar"
+                    bat "start /B java -jar ${DEPLOY_PATH}\\search-service-1.0.0.jar"
                 }
             }
         }
     }
     
     post {
-        always {
-            cleanWs()
-        }
         success {
             echo 'Deployment successful!'
         }
