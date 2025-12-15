@@ -1,0 +1,8 @@
+com\revhub\post\config\MockUserFilter.class
+com\revhub\post\controller\SimplePostController.class
+com\revhub\post\service\PostProducer.class
+com\revhub\post\repository\PostRepository.class
+com\revhub\post\config\SecurityConfig.class
+com\revhub\post\entity\Comment.class
+com\revhub\post\PostServiceApplication.class
+com\revhub\post\entity\Post.class

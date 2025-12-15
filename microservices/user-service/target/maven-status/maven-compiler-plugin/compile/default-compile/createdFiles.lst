@@ -1,0 +1,9 @@
+com\revhub\user\config\SecurityConfig.class
+com\revhub\user\controller\RegisterRequest.class
+com\revhub\user\controller\UserProfile.class
+com\revhub\user\controller\LoginRequest.class
+com\revhub\user\controller\UserRepository.class
+com\revhub\user\controller\UserController.class
+com\revhub\user\exception\GlobalExceptionHandler.class
+com\revhub\user\UserServiceApplication.class
+com\revhub\user\controller\User.class

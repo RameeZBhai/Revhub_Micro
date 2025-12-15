@@ -1,0 +1,1160 @@
+<div class="dashboard-container">
+  <!-- Top Navigation Bar -->
+  <nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container-fluid px-4">
+      <!-- Logo -->
+      <a class="navbar-brand fw-bold" href="#">
+        RevHub
+      </a>
+
+      <!-- Search Bar -->
+      <div class="mx-auto" style="max-width: 600px; width: 100%;">
+        <div class="input-group">
+          <input type="text" class="form-control" placeholder="Search users, posts, hashtags..."
+            [(ngModel)]="searchQuery" name="search" (input)="onSearchInput()"
+            style="padding: 12px 16px; font-size: 1rem;">
+          <span class="input-group-text bg-transparent border-start-0" style="padding: 12px 16px;">
+            <i class="fas fa-search text-muted"></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Right side buttons -->
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-outline-secondary btn-sm" (click)="toggleTheme()">
+          <i class="fas" [class.fa-moon]="!isDarkTheme" [class.fa-sun]="isDarkTheme"></i>
+        </button>
+        <button class="btn btn-outline-danger btn-sm" routerLink="/auth/login">
+          <i class="fas fa-sign-out-alt me-1"></i>Logout
+        </button>
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- Left Sidebar Navigation -->
+  <div class="left-sidebar d-none d-lg-block">
+    <div class="sidebar-nav">
+      <button class="sidebar-nav-item" [class.active]="activeTab === 'feed'" (click)="setActiveTab('feed')">
+        <i class="fas fa-home"></i>
+        <span>Feed</span>
+      </button>
+      <button class="sidebar-nav-item" [class.active]="activeTab === 'create'" (click)="setActiveTab('create')">
+        <i class="fas fa-plus"></i>
+        <span>Create</span>
+      </button>
+      <button class="sidebar-nav-item position-relative" [class.active]="activeTab === 'chat'"
+        (click)="setActiveTab('chat')">
+        <i class="fas fa-comments"></i>
+        <span>Chat</span>
+        <span *ngIf="unreadChatCount > 0" class="notification-badge">{{unreadChatCount}}</span>
+      </button>
+      <button class="sidebar-nav-item position-relative" [class.active]="activeTab === 'notifications'"
+        (click)="setActiveTab('notifications')">
+        <i class="fas fa-bell"></i>
+        <span>Notifications</span>
+        <span *ngIf="unreadNotificationCount > 0" class="notification-badge">{{unreadNotificationCount}}</span>
+      </button>
+      <button class="sidebar-nav-item" [class.active]="activeTab === 'profile'" (click)="setActiveTab('profile')">
+        <i class="fas fa-user"></i>
+        <span>Profile</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="main-content">
+
+    <div [class.d-none]="activeTab !== 'feed'" class="content-section">
+      <div class="container">
+        <h3 class="mb-4">Feed</h3>
+
+        <!-- Search Bar -->
+
+
+        <!-- New Feed Header Design -->
+        <div class="feed-header-redesign mb-4" *ngIf="!searchQuery.trim()">
+          <div class="feed-nav-pills">
+            <div class="nav-pill-redesign" [class.active]="activeFeedType === 'universal'"
+              (click)="switchFeed('universal')">
+              <div class="pill-icon-redesign">
+                <i class="fas fa-compass"></i>
+              </div>
+              <span>Explore</span>
+            </div>
+            <div class="nav-pill-redesign" [class.active]="activeFeedType === 'followers'"
+              (click)="switchFeed('followers')">
+              <div class="pill-icon-redesign">
+                <i class="fas fa-user-friends"></i>
+              </div>
+              <span>Following</span>
+            </div>
+            <div class="nav-pill-redesign" [class.active]="activeFeedType === 'my-followers'"
+              (click)="switchFeed('my-followers')">
+              <div class="pill-icon-redesign">
+                <i class="fas fa-users"></i>
+              </div>
+              <span>Followers</span>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Redesigned Quick Post Widget -->
+        <div class="quick-post-redesign mb-4" *ngIf="!searchQuery.trim()">
+          <div class="post-prompt-section">
+            <div class="user-avatar-section">
+              <img [src]="userProfile?.profilePicture || 'default.jpg'" class="user-avatar-new" alt="Your avatar">
+              <div class="status-indicator"></div>
+            </div>
+            <div class="post-input-section">
+              <div class="post-input-bubble" (click)="setActiveTab('create')">
+                <span class="post-placeholder">Share something amazing...</span>
+                <i class="fas fa-edit post-edit-icon"></i>
+              </div>
+            </div>
+          </div>
+          <div class="post-actions-redesign">
+            <div class="action-bubble" (click)="setActiveTab('create')">
+              <i class="fas fa-image"></i>
+              <span>Photo</span>
+            </div>
+            <div class="action-bubble" (click)="setActiveTab('create')">
+              <i class="fas fa-video"></i>
+              <span>Video</span>
+            </div>
+            <div class="action-bubble" (click)="setActiveTab('create')">
+              <i class="fas fa-poll"></i>
+              <span>Poll</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search Results -->
+        <div *ngIf="searchQuery.trim() && (searchResults.length > 0 || isSearching)" class="mb-4">
+          <div *ngIf="isSearching" class="text-center mb-3">
+            <div class="spinner-border spinner-border-sm" role="status">
+              <span class="visually-hidden">Searching...</span>
+            </div>
+          </div>
+
+
+          <div *ngIf="!isSearching" class="mb-3">
+            <ul class="nav nav-tabs">
+              <li class="nav-item">
+                <button class="nav-link" [class.active]="searchActiveTab === 'users'" (click)="setSearchTab('users')">
+                  Users ({{getUserResults().length}})
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" [class.active]="searchActiveTab === 'posts'" (click)="setSearchTab('posts')">
+                  Posts ({{getPostResults().length}})
+                </button>
+              </li>
+            </ul>
+          </div>
+
+
+          <div *ngIf="searchActiveTab === 'users' && !isSearching">
+            <div *ngIf="getUserResults().length > 0">
+              <div *ngFor="let user of getUserResults()" class="card mb-2" style="max-width: 600px; margin: 0 auto;">
+                <div class="card-body py-2">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                      <img [src]="user.profilePicture || 'default.jpg'" class="rounded-circle me-3" alt="Avatar"
+                        style="width: 40px; height: 40px; object-fit: cover;">
+                      <div>
+                        <h6 class="mb-0">{{user.username}}</h6>
+                        <small class="text-muted">{{user.bio || 'No bio available'}}</small>
+                      </div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary" [routerLink]="['/profile', user.username]">View
+                      Profile</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="getUserResults().length === 0" class="text-center text-muted py-4">
+              <p>No users found for "{{searchQuery}}"</p>
+            </div>
+          </div>
+
+
+          <div *ngIf="searchActiveTab === 'posts' && !isSearching">
+            <div *ngIf="getPostResults().length > 0">
+              <div *ngFor="let post of getPostResults()" class="card mb-2" style="max-width: 600px; margin: 0 auto;">
+                <div class="card-body py-3">
+                  <div class="d-flex align-items-center mb-2">
+                    <img [src]="post.author?.profilePicture || 'default.jpg'" class="rounded-circle me-2" alt="Avatar"
+                      style="width: 32px; height: 32px; object-fit: cover;">
+                    <div>
+                      <h6 class="mb-0 small">{{post.author?.username || post.author}}</h6>
+
+                      <small class="text-muted" style="font-size: 0.75rem;">{{post.createdDate | date:'MMM d,
+                        y'}}</small>
+                    </div>
+                  </div>
+                  <p class="card-text mb-2" style="font-size: 0.9rem;">{{post.content}}</p>
+                  <div *ngIf="post.imageUrl" class="mb-2">
+                    <video *ngIf="post.mediaType === 'video'" [src]="post.imageUrl" controls autoplay muted loop
+                      class="img-fluid rounded" style="max-width: 100%; max-height: 200px;">
+                    </video>
+                    <img *ngIf="post.mediaType !== 'video'" [src]="post.imageUrl" class="img-fluid rounded"
+                      style="max-width: 100%; max-height: 200px; object-fit: cover;" alt="Post image">
+                  </div>
+                  <div class="d-flex justify-content-between text-muted small">
+                    <span>{{post.likesCount}} likes • {{post.commentsCount}} comments</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="getPostResults().length === 0" class="text-center text-muted py-4">
+              <p>No posts found for "{{searchQuery}}"</p>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="isLoading && !searchQuery.trim()" class="text-center">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!searchQuery.trim()">
+          <!-- Suggested Users Section -->
+          <div class="suggested-users-integrated mb-4" *ngIf="suggestedUsers.length > 0 && showSuggestions">
+            <div class="suggestions-header">
+              <h5 class="suggestions-title">
+                <i class="fas fa-user-plus me-2"></i>People You May Know
+              </h5>
+              <button class="close-suggestions-btn" (click)="closeSuggestions()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="suggestions-grid">
+              <div *ngFor="let user of suggestedUsers" class="suggestion-card">
+                <div class="suggestion-avatar">
+                  <img [src]="user.profilePicture || 'default.jpg'" alt="Avatar">
+                </div>
+                <div class="suggestion-info">
+                  <div class="suggestion-name">{{user.name || user.username}}</div>
+                  <div class="suggestion-username">&#64;{{user.username}}</div>
+                  <div class="suggestion-followers">{{user.followers || 0}} followers</div>
+                </div>
+                <button class="suggestion-follow-btn" [class.following]="user.followStatus === 'ACCEPTED'"
+                  [class.pending]="user.followStatus === 'PENDING'" (click)="user.followStatus === 'ACCEPTED' ? unfollowUser(user) : 
+                                 user.followStatus === 'PENDING' ? cancelFollowRequest(user) : followUser(user)">
+                  <i class="fas" [class.fa-user-plus]="user.followStatus === 'NOT_FOLLOWING'"
+                    [class.fa-user-check]="user.followStatus === 'ACCEPTED'"
+                    [class.fa-clock]="user.followStatus === 'PENDING'"></i>
+                  <span>{{user.followStatus === 'ACCEPTED' ? 'Following' :
+                    user.followStatus === 'PENDING' ? 'Pending' : 'Follow'}}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+
+
+
+
+
+          <!-- Redesigned Post Cards -->
+          <div class="post-card-redesign mb-4" *ngFor="let post of posts">
+            <div class="post-container-new">
+              <!-- New Post Header Design -->
+              <div class="post-header-redesign">
+                <div class="author-section-new">
+                  <div class="author-avatar-container">
+                    <img [src]="post.author?.profilePicture || 'default.jpg'" class="author-avatar-new" alt="Avatar">
+                    <div class="avatar-ring"></div>
+                  </div>
+                  <div class="author-info-new">
+                    <div class="author-name">{{post.author?.username || post.author}}</div>
+
+                    <div class="post-timestamp">{{post.createdDate | date:'MMM d \u2022 h:mm a'}}</div>
+                  </div>
+                </div>
+                <div class="post-menu-new" *ngIf="(post.author?.username || post.author) === profileUsername">
+
+                  <button class="menu-btn-new" data-bs-toggle="dropdown">
+                    <i class="fas fa-ellipsis-v"></i>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li><button class="dropdown-item" (click)="startEditingPost(post)"><i
+                          class="fas fa-edit me-2"></i>Edit</button></li>
+                    <li><button class="dropdown-item text-danger" (click)="askToDeletePost(post)"><i
+                          class="fas fa-trash me-2"></i>Delete</button></li>
+                  </ul>
+
+                </div>
+              </div>
+
+              <!-- Post Content -->
+              <div *ngIf="editingPostId !== post.id">
+                <p class="card-text mb-3" style="font-size: 1rem; line-height: 1.5;"
+                  [innerHTML]="formatPostContent(post.content)"></p>
+              </div>
+              <div *ngIf="editingPostId === post.id" class="mb-3">
+                <textarea class="form-control mb-2" [(ngModel)]="editedContent" rows="3"></textarea>
+                <div class="d-flex justify-content-end gap-2">
+                  <button class="btn btn-sm btn-outline-secondary" (click)="cancelEditingPost()">Cancel</button>
+                  <button class="btn btn-sm btn-primary" (click)="saveEditedPost(post)">Save</button>
+                </div>
+              </div>
+              <div *ngIf="post.imageUrl" class="mb-2">
+
+                <video *ngIf="post.mediaType === 'video'" [src]="post.imageUrl" controls autoplay muted loop
+                  class="img-fluid rounded" style="max-width: 100%; max-height: 300px;">
+                </video>
+                <img *ngIf="post.mediaType !== 'video'" [src]="post.imageUrl" class="img-fluid rounded"
+                  style="max-width: 100%; max-height: 300px; object-fit: cover;" alt="Post image">
+              </div>
+
+
+
+              <!-- Redesigned Post Actions -->
+              <div class="post-actions-new">
+                <div class="action-group-new">
+                  <button class="action-btn-new like-btn" [class.liked]="post.isLiked" (click)="likePost(post)">
+                    <div class="action-icon-container">
+                      <i class="fas fa-heart"></i>
+                    </div>
+                    <span class="action-count">{{post.likesCount}}</span>
+                  </button>
+                  <button class="action-btn-new comment-btn" (click)="commentPost(post)">
+                    <div class="action-icon-container">
+                      <i class="fas fa-comment"></i>
+                    </div>
+                    <span class="action-count">{{post.commentsCount}}</span>
+                  </button>
+                  <button class="action-btn-new share-btn" (click)="sharePost(post)">
+                    <div class="action-icon-container">
+                      <i class="fas fa-share"></i>
+                    </div>
+                    <span class="action-count">{{post.sharesCount}}</span>
+                  </button>
+                </div>
+              </div>
+
+
+              <div *ngIf="showComments[post.id]" class="mt-3 border-top pt-3"
+                style="background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">
+                <h6 class="mb-3" style="color: #495057;"><i class="fas fa-comments"></i> Comments</h6>
+                <div *ngFor="let comment of post.commentsList" class="mb-3">
+                  <div class="d-flex">
+                    <img [src]="comment.author?.profilePicture || 'default.jpg'" class="rounded-circle me-3"
+                      style="width: 32px; height: 32px; object-fit: cover;" alt="Avatar">
+                    <div class="flex-grow-1">
+                      <div class="rounded p-3 d-flex justify-content-between align-items-start"
+                        style="background: #f1f3f4; border: 1px solid #e0e0e0;">
+                        <div class="flex-grow-1">
+                          <strong style="color: #1976d2;">{{comment.author?.username || comment.author}}</strong>
+                          <p class="mb-0 mt-1" style="color: #333333;">{{comment.content}}</p>
+                        </div>
+                        <div class="d-flex align-items-center">
+                          <button class="btn btn-sm text-danger p-0 ms-2" *ngIf="canDeleteComment(comment, post)"
+                            (click)="deleteComment(post, comment.id)" title="Delete Comment">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="d-flex align-items-center mt-1 gap-3">
+                        <small class="text-muted">{{(comment.timestamp || comment.createdDate) | date:'short'}}</small>
+                        <button class="btn btn-link btn-sm p-0 text-decoration-none"
+                          (click)="replyToComment(post, comment)">Reply</button>
+                      </div>
+
+                      <!-- Replies -->
+                      <div *ngIf="comment.replies && comment.replies.length > 0" class="ms-4 mt-2">
+                        <div *ngFor="let reply of comment.replies" class="d-flex mb-2">
+                          <img [src]="reply.author?.profilePicture || 'default.jpg'" class="rounded-circle me-2"
+                            style="width: 24px; height: 24px; object-fit: cover;">
+                          <div class="flex-grow-1">
+                            <div class="rounded p-2" style="background: #f8f9fa; border: 1px solid #e9ecef;">
+                              <div class="d-flex justify-content-between">
+                                <strong>{{reply.author?.username || reply.author}}</strong>
+                                <button *ngIf="canDeleteComment(reply, post)" class="btn btn-sm text-danger p-0"
+                                  (click)="deleteReply(post, comment.id, reply.id)"><i
+                                    class="fas fa-times"></i></button>
+                              </div>
+                              <p class="mb-0 small">{{reply.content}}</p>
+                            </div>
+                            <small class="text-muted ms-1">{{(reply.timestamp || reply.createdDate) |
+                              date:'short'}}</small>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Reply Input -->
+                      <div *ngIf="replyingTo?.postId === post.id && replyingTo?.commentId === comment.id"
+                        class="ms-4 mt-2">
+                        <div class="input-group input-group-sm">
+                          <input type="text" class="form-control" placeholder="Write a reply..."
+                            [(ngModel)]="replyContent" (keyup.enter)="addReply(post, comment)">
+                          <button class="btn btn-primary" (click)="addReply(post, comment)">Reply</button>
+                          <button class="btn btn-outline-secondary" (click)="cancelReply()">Cancel</button>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-2">
+                  <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Write a comment..." [(ngModel)]="newComment"
+                      name="comment" (keyup.enter)="addComment(post)">
+                    <button class="btn btn-primary" (click)="addComment(post)"
+                      [disabled]="!newComment || !newComment.trim()">
+                      Post
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
+        <div *ngIf="posts.length === 0 && !isLoading && !searchQuery.trim()" class="text-center text-muted">
+          <p>No posts available. Create your first post!</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Redesigned Create Post Module -->
+    <div [class.d-none]="activeTab !== 'create'" class="content-section">
+      <div class="container" style="max-width: 700px;">
+        <div class="create-post-redesign">
+          <div class="create-header-new">
+            <div class="creator-profile-section">
+              <div class="creator-avatar-container">
+                <img [src]="userProfile?.profilePicture || 'default.jpg'" class="creator-avatar-new" alt="Your avatar">
+                <div class="creator-status-ring"></div>
+              </div>
+              <div class="creator-info">
+                <h4 class="creator-title">Create Something Amazing</h4>
+                <p class="creator-subtitle">Share your thoughts with the world</p>
+              </div>
+            </div>
+            <div class="visibility-pills">
+              <div class="visibility-pill" [class.active]="postVisibility === 'public'"
+                (click)="postVisibility = 'public'">
+                <i class="fas fa-globe"></i>
+                <span>Public</span>
+              </div>
+              <div class="visibility-pill" [class.active]="postVisibility === 'followers'"
+                (click)="postVisibility = 'followers'">
+                <i class="fas fa-users"></i>
+                <span>Friends</span>
+              </div>
+              <div class="visibility-pill" [class.active]="postVisibility === 'private'"
+                (click)="postVisibility = 'private'">
+                <i class="fas fa-lock"></i>
+                <span>Private</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="create-content-new">
+            <form (ngSubmit)="createPost()">
+              <!-- Redesigned Text Area -->
+              <div class="content-input-section">
+                <div class="text-area-container">
+                  <textarea class="content-textarea-new" rows="5"
+                    placeholder="What's happening? Share your story, thoughts, or moments..."
+                    [(ngModel)]="newPostContent" name="postContent" maxlength="500"></textarea>
+                  <div class="textarea-overlay">
+                    <div class="input-decorations">
+                      <div class="decoration-dot dot-1"></div>
+                      <div class="decoration-dot dot-2"></div>
+                      <div class="decoration-dot dot-3"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="input-footer">
+                  <div class="input-hints">
+                    <span class="hint-item">
+                      <i class="fas fa-hashtag"></i>
+                      <span>Hashtags</span>
+                    </span>
+                    <span class="hint-item">
+                      <i class="fas fa-at"></i>
+                      <span>Mentions</span>
+                    </span>
+                  </div>
+                  <div class="character-counter-new" [class.warning]="newPostContent.length > 400"
+                    [class.danger]="newPostContent.length > 450">
+                    <div class="counter-circle">
+                      <span>{{newPostContent.length}}</span>
+                    </div>
+                    <span class="counter-max">/500</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hashtag Input -->
+              <div class="mb-3">
+                <div class="input-group">
+                  <span class="input-group-text bg-transparent">
+                    <i class="fas fa-hashtag text-primary"></i>
+                  </span>
+                  <input type="text" class="form-control" placeholder="Add hashtags (comma separated)"
+                    [(ngModel)]="hashtagInput" name="hashtags">
+                </div>
+              </div>
+
+              <!-- Redesigned Media Upload Section -->
+              <div class="media-options-new">
+                <div class="media-grid">
+                  <label class="media-option-card" for="mediaUpload">
+                    <div class="media-icon-container media-photo">
+                      <i class="fas fa-camera"></i>
+                    </div>
+                    <span class="media-label">Photo/Video</span>
+                    <div class="media-accent"></div>
+                    <input type="file" id="mediaUpload" class="d-none" accept="image/*,video/*"
+                      (change)="onFileSelected($event)">
+                  </label>
+                  <div class="media-option-card" (click)="togglePollCreation()">
+                    <div class="media-icon-container media-poll">
+                      <i class="fas fa-poll"></i>
+                    </div>
+                    <span class="media-label">Create Poll</span>
+                    <div class="media-accent"></div>
+                  </div>
+                  <div class="media-option-card" (click)="toggleLocationTag()">
+                    <div class="media-icon-container media-location">
+                      <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <span class="media-label">Add Location</span>
+                    <div class="media-accent"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Media Preview -->
+              <div *ngIf="selectedFile" class="mb-3">
+                <div class="card">
+                  <div class="card-header d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                      <i class="fas fa-file me-1"></i>{{selectedFile.name}} ({{selectedFileType}})
+                    </small>
+                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeSelectedFile()">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="card-body text-center p-2">
+                    <div *ngIf="selectedFileType === 'image'">
+                      <img [src]="selectedFilePreview" class="img-fluid rounded"
+                        style="max-height: 300px; object-fit: cover;" alt="Preview">
+                    </div>
+                    <div *ngIf="selectedFileType === 'video'">
+                      <video [src]="selectedFilePreview" controls class="img-fluid rounded"
+                        style="max-height: 300px;"></video>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Poll Creation -->
+              <div *ngIf="showPollCreation" class="mb-3">
+                <div class="card">
+                  <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0"><i class="fas fa-poll me-2"></i>Create Poll</h6>
+                    <button type="button" class="btn btn-sm btn-outline-danger" (click)="togglePollCreation()">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-2" *ngFor="let option of pollOptions; let i = index; trackBy: trackByIndex">
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text">{{i + 1}}</span>
+                        <input type="text" class="form-control" placeholder="Poll option {{i + 1}}"
+                          [value]="pollOptions[i]" (input)="updatePollOption(i, $event)" name="pollOption{{i}}">
+                        <button *ngIf="pollOptions.length > 2" type="button" class="btn btn-outline-danger btn-sm"
+                          (click)="removePollOption(i)">
+                          <i class="fas fa-minus"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <button *ngIf="pollOptions.length < 4" type="button" class="btn btn-sm btn-outline-primary"
+                      (click)="addPollOption()">
+                      <i class="fas fa-plus me-1"></i>Add Option
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Location Tag -->
+              <div *ngIf="showLocationTag" class="mb-3">
+                <div class="input-group">
+                  <span class="input-group-text bg-transparent">
+                    <i class="fas fa-map-marker-alt text-info"></i>
+                  </span>
+                  <input type="text" class="form-control" placeholder="Add location" [(ngModel)]="locationTag"
+                    name="location">
+                  <button type="button" class="btn btn-outline-danger" (click)="toggleLocationTag()">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Redesigned Action Buttons -->
+              <div class="action-buttons-new">
+                <button type="button" class="action-btn-secondary" (click)="clearPost()">
+                  <div class="btn-icon-container">
+                    <i class="fas fa-times"></i>
+                  </div>
+                  <span>Cancel</span>
+                </button>
+                <button type="submit" class="action-btn-primary"
+                  [disabled]="!newPostContent.trim() || newPostContent.length > 500">
+                  <div class="btn-icon-container">
+                    <i class="fas fa-rocket"></i>
+                  </div>
+                  <span>Share Post</span>
+                  <div class="btn-glow"></div>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Chat Module -->
+    <div [class.d-none]="activeTab !== 'chat'" class="content-section">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Chats</h5>
+              </div>
+              <div class="card-body p-0">
+                <div class="mb-3 p-3">
+                  <input type="text" class="form-control" placeholder="Search people..." [(ngModel)]="chatSearchQuery"
+                    (input)="onChatSearchInput()">
+                </div>
+                <div *ngIf="chatSearchResults.length > 0" class="px-3 pb-3">
+                  <h6 class="text-muted mb-2">Search Results</h6>
+                  <div *ngFor="let user of chatSearchResults"
+                    class="d-flex align-items-center p-2 border rounded mb-2 cursor-pointer" (click)="startChat(user)">
+                    <img [src]="user.profilePicture || 'default.jpg'" class="rounded-circle me-2"
+                      style="width: 32px; height: 32px; object-fit: cover;">
+                    <div>
+                      <div class="fw-bold">{{user.username}}</div>
+                      <small class="text-muted">{{user.bio || 'No bio'}}</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="list-group list-group-flush">
+                  <div *ngFor="let contact of contacts"
+                    class="list-group-item list-group-item-action d-flex align-items-center"
+                    [class.active]="selectedChat === contact" (click)="selectChat(contact)">
+                    <img [src]="'default.jpg'" class="rounded-circle me-3"
+                      style="width: 40px; height: 40px; object-fit: cover;">
+                    <div class="flex-grow-1">
+                      <div class="fw-bold">{{contact}}</div>
+                      <small class="text-muted">Click to chat</small>
+                    </div>
+                    <span *ngIf="unreadCounts[contact] > 0"
+                      class="badge bg-danger rounded-pill">{{unreadCounts[contact]}}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="card" style="height: 500px;">
+              <div *ngIf="!selectedChat" class="card-body d-flex align-items-center justify-content-center">
+                <div class="text-center text-muted">
+                  <i class="fas fa-comments fa-3x mb-3"></i>
+                  <h5>Select a chat to start messaging</h5>
+                </div>
+              </div>
+              <div *ngIf="selectedChat">
+                <div class="card-header d-flex align-items-center">
+                  <img [src]="'default.jpg'" class="rounded-circle me-3"
+                    style="width: 40px; height: 40px; object-fit: cover;">
+                  <h6 class="mb-0">{{selectedChat}}</h6>
+                </div>
+                <div class="card-body" style="height: 400px; overflow-y: auto;">
+                  <div *ngFor="let message of messages[selectedChat]" class="mb-3">
+                    <div class="d-flex" [class.justify-content-end]="message.sender === currentUser?.username">
+                      <div class="chat-message" [class.sent]="message.sender === currentUser?.username"
+                        [class.received]="message.sender !== currentUser?.username">
+                        <div class="fw-bold mb-1">{{message.sender}}</div>
+                        <div>{{message.content}}</div>
+                        <small class="text-muted">{{message.timestamp}}</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <div class="input-group" style="align-items: stretch;">
+                    <input type="text" class="form-control" placeholder="Type a message..." [(ngModel)]="newMessage"
+                      (keyup.enter)="sendMessage()"
+                      style="border-radius: 25px 0 0 25px; border-right: none; padding: 12px 20px;">
+                    <button class="btn" (click)="sendMessage()" [disabled]="!newMessage.trim()"
+                      style="background: linear-gradient(135deg, #14B8A6, #F97316); color: white; border: none; border-radius: 0 25px 25px 0; padding: 12px 20px;">
+                      <i class="fas fa-paper-plane"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications Module -->
+    <div [class.d-none]="activeTab !== 'notifications'" class="content-section">
+      <div class="container">
+        <h3 class="mb-4">Notifications</h3>
+        <div class="notifications-container">
+          <div *ngIf="notifications.length === 0" class="text-center text-muted py-5">
+            <i class="fas fa-bell-slash fa-3x mb-3"></i>
+            <h5>No notifications yet</h5>
+            <p>You'll see notifications here when you have new activity</p>
+          </div>
+          <div *ngFor="let notification of notifications" class="notification-item"
+            [class.unread]="!notification.readStatus" (click)="handleNotificationClick(notification)">
+            <div class="d-flex align-items-start">
+              <div class="notification-icon" [style.background]="getNotificationIconBg(notification.type)">
+                <i class="fas" [class]="getNotificationIcon(notification.type)"></i>
+              </div>
+              <div class="notification-content">
+                <div class="notification-title">{{getNotificationTitle(notification.type)}}</div>
+                <div class="notification-text">{{notification.message}}</div>
+                <div class="notification-time">{{notification.createdDate | date:'MMM d, y \u2022 h:mm a'}}</div>
+                <div class="notification-actions" *ngIf="notification.type === 'FOLLOW_REQUEST'">
+                  <button class="btn btn-primary" (click)="acceptFollowRequest(notification); $event.stopPropagation()">
+                    Accept
+                  </button>
+                  <button class="btn btn-outline-secondary"
+                    (click)="rejectFollowRequest(notification); $event.stopPropagation()">
+                    Decline
+                  </button>
+                </div>
+              </div>
+              <button class="btn btn-sm btn-outline-secondary ms-auto"
+                (click)="dismissNotification(notification); $event.stopPropagation()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div [class.d-none]="activeTab !== 'profile'" class="content-section">
+      <div class="container">
+        <div class="profile-redesign-wrapper" *ngIf="!isEditingProfile">
+          <div class="profile-header-redesign">
+            <div class="profile-cover-new">
+              <div class="cover-gradient-new"></div>
+              <div class="cover-decorations">
+                <div class="decoration-circle circle-1"></div>
+                <div class="decoration-circle circle-2"></div>
+                <div class="decoration-circle circle-3"></div>
+              </div>
+            </div>
+            <div class="profile-info-redesign">
+              <div class="avatar-section-new">
+                <div class="avatar-container-redesign">
+                  <img [src]="userProfile?.profilePicture || 'default.jpg'" class="profile-avatar-redesign"
+                    alt="Profile">
+                  <div class="avatar-ring-animated"></div>
+                </div>
+              </div>
+              <div class="user-info-redesign">
+                <div class="username-section">
+                  <h2 class="username-redesign">{{profileName}}</h2>
+                  <p class="bio-redesign" *ngIf="userProfile?.bio">{{userProfile?.bio}}</p>
+                </div>
+                <div class="stats-pills">
+                  <div class="stat-pill" (click)="setProfileTab('posts')">
+                    <div class="stat-number">{{postsCount}}</div>
+                    <div class="stat-label">Posts</div>
+                  </div>
+                  <div class="stat-pill" (click)="setProfileTab('followers')">
+                    <div class="stat-number">{{followersCount}}</div>
+                    <div class="stat-label">Followers</div>
+                  </div>
+                  <div class="stat-pill" (click)="setProfileTab('following')">
+                    <div class="stat-number">{{followingCount}}</div>
+                    <div class="stat-label">Following</div>
+                  </div>
+                </div>
+              </div>
+              <div class="profile-actions-redesign">
+                <button class="action-btn-redesign primary" (click)="editProfile()">
+                  <i class="fas fa-edit"></i>
+                  <span>Edit</span>
+                </button>
+                <button class="action-btn-redesign" [class.private]="userProfile?.isPrivate"
+                  [class.public]="!userProfile?.isPrivate" (click)="togglePrivacy()">
+                  <i class="fas" [class.fa-lock]="userProfile?.isPrivate"
+                    [class.fa-globe]="!userProfile?.isPrivate"></i>
+                  <span>{{userProfile?.isPrivate ? 'Private' : 'Public'}}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="new-profile-stats-card">
+            <div class="new-stats-grid">
+              <div class="new-stat-box">
+                <i class="fas fa-images new-stat-icon"></i>
+                <div class="new-stat-info">
+                  <span class="new-stat-number">{{postsCount}}</span>
+                  <span class="new-stat-text">Posts</span>
+                </div>
+              </div>
+              <div class="new-stat-box">
+                <i class="fas fa-heart new-stat-icon"></i>
+                <div class="new-stat-info">
+                  <span class="new-stat-number">{{getTotalLikes()}}</span>
+                  <span class="new-stat-text">Likes Received</span>
+                </div>
+              </div>
+              <div class="new-stat-box">
+                <i class="fas fa-comments new-stat-icon"></i>
+                <div class="new-stat-info">
+                  <span class="new-stat-number">{{getTotalComments()}}</span>
+                  <span class="new-stat-text">Comments Received</span>
+                </div>
+              </div>
+            </div>
+            <div class="new-recent-activity">
+              <h4><i class="fas fa-clock"></i> Recent Activity</h4>
+              <div class="new-activity-list">
+                <div class="new-activity-item" *ngFor="let activity of getRecentActivity()">
+                  <i class="fas" [class]="activity.icon"></i>
+                  <span>{{activity.text}}</span>
+                  <small>{{activity.date | date:'short'}}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="profile-nav-redesign">
+            <div class="nav-pill-container">
+              <div class="nav-pill-redesign" [class.active]="profileActiveTab === 'posts'"
+                (click)="setProfileTab('posts')">
+                <div class="pill-icon-redesign">
+                  <i class="fas fa-th-large"></i>
+                </div>
+                <span>Posts</span>
+              </div>
+              <div class="nav-pill-redesign" [class.active]="profileActiveTab === 'about'"
+                (click)="setProfileTab('about')">
+                <div class="pill-icon-redesign">
+                  <i class="fas fa-user"></i>
+                </div>
+                <span>About</span>
+              </div>
+              <div class="nav-pill-redesign" [class.active]="profileActiveTab === 'followers'"
+                (click)="setProfileTab('followers')">
+                <div class="pill-icon-redesign">
+                  <i class="fas fa-users"></i>
+                </div>
+                <span>Followers</span>
+              </div>
+              <div class="nav-pill-redesign" [class.active]="profileActiveTab === 'following'"
+                (click)="setProfileTab('following')">
+                <div class="pill-icon-redesign">
+                  <i class="fas fa-user-friends"></i>
+                </div>
+                <span>Following</span>
+              </div>
+            </div>
+          </div>
+          <div class="new-tab-content">
+            <div *ngIf="profileActiveTab === 'posts'" class="new-posts-grid">
+              <div class="new-post-card" *ngFor="let post of userPosts">
+                <div *ngIf="post.imageUrl" class="new-post-image">
+                  <img *ngIf="post.mediaType === 'image' || (!post.mediaType && isImage(post.imageUrl))"
+                    [src]="post.imageUrl" alt="Post">
+                  <video *ngIf="post.mediaType === 'video' || (!post.mediaType && isVideo(post.imageUrl))"
+                    [src]="post.imageUrl" controls></video>
+                  <div class="new-post-overlay">
+                    <span><i class="fas fa-heart"></i> {{post.likesCount}}</span>
+                    <span><i class="fas fa-comment"></i> {{post.commentsCount}}</span>
+                  </div>
+                </div>
+                <div class="new-post-content">
+                  <p>{{post.content}}</p>
+                  <div class="new-post-actions">
+                    <button class="new-btn-like" [class.liked]="post.isLiked" (click)="likePost(post)">
+                      <i class="fas fa-heart"></i> {{post.likesCount}}
+                    </button>
+                    <button class="new-btn-comment" (click)="commentPost(post)">
+                      <i class="fas fa-comment"></i> {{post.commentsCount}}
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="userPosts.length === 0" class="new-empty-state">
+                <i class="fas fa-camera"></i>
+                <h3>No posts yet</h3>
+                <p>Share your first moment!</p>
+                <button class="btn btn-primary" (click)="setActiveTab('create')">
+                  <i class="fas fa-plus"></i> Create Post
+                </button>
+              </div>
+            </div>
+            <div *ngIf="profileActiveTab === 'about'" class="new-about-section">
+              <div class="new-info-card">
+                <h3><i class="fas fa-info-circle"></i> Personal Information</h3>
+                <div class="new-info-item">
+                  <label>Username:</label>
+                  <span>{{ '@' + profileUsername }}</span>
+                </div>
+                <div class="new-info-item" *ngIf="userProfile?.bio">
+                  <label>Bio:</label>
+                  <span>{{userProfile?.bio}}</span>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="profileActiveTab === 'followers'" class="new-followers-section">
+              <div class="new-user-list">
+                <div class="new-user-item" *ngFor="let follower of followersList">
+                  <img [src]="follower.profilePicture || 'default.jpg'" class="new-user-avatar">
+                  <div class="new-user-info">
+                    <h4>{{follower.username}}</h4>
+                    <p>{{follower.bio || 'No bio available'}}</p>
+                  </div>
+                  <button class="btn btn-outline-danger" (click)="removeFollower(follower)">
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="profileActiveTab === 'following'" class="new-following-section">
+              <div class="new-user-list">
+                <div class="new-user-item" *ngFor="let following of followingList">
+                  <img [src]="following.profilePicture || 'default.jpg'" class="new-user-avatar">
+                  <div class="new-user-info">
+                    <h4>{{following.username}}</h4>
+                    <p>{{following.bio || 'No bio available'}}</p>
+                  </div>
+                  <button class="btn btn-outline-danger" (click)="unfollowUser(following)">
+                    Unfollow
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body" *ngIf="isEditingProfile">
+          <h4 class="text-center mb-4">Edit Profile</h4>
+          <form>
+            <div class="mb-3 text-center">
+              <img [src]="userProfile?.profilePicture || 'default.jpg'" class="rounded-circle mb-2" alt="Profile"
+                style="width: 80px; height: 80px; object-fit: cover;">
+              <div>
+                <input type="file" class="form-control" accept="image/*" (change)="onProfilePictureSelected($event)"
+                  #fileInput style="display: none;">
+                <button type="button" class="btn btn-sm btn-outline-primary" (click)="fileInput.click()">Change
+                  Picture</button>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Bio</label>
+              <textarea class="form-control" rows="3" [(ngModel)]="editBio" name="bio"
+                placeholder="Tell us about yourself..."></textarea>
+            </div>
+            <div class="d-flex gap-2 justify-content-center">
+              <button type="button" class="btn btn-primary" (click)="saveProfile()">Save</button>
+              <button type="button" class="btn btn-secondary" (click)="cancelEdit()">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+
+      <div *ngIf="showFollowersList && !isEditingProfile">
+        <div class="d-flex align-items-center mb-3">
+          <button class="btn btn-outline-secondary btn-sm me-3" (click)="hideUserLists()">
+            ← Back
+          </button>
+          <h4 class="mb-0">Followers</h4>
+        </div>
+        <div class="list-group" *ngIf="followersList.length > 0">
+          <div class="list-group-item d-flex align-items-center justify-content-between"
+            *ngFor="let follower of followersList">
+            <div class="d-flex align-items-center">
+              <img [src]="follower.profilePicture || 'default.jpg'" class="rounded-circle me-3" alt="Avatar"
+                style="width: 40px; height: 40px; object-fit: cover;">
+              <div>
+                <h6 class="mb-0">{{follower.username}}</h6>
+                <small class="text-muted">&#64;{{follower.username}}</small>
+                <small class="text-muted d-block" *ngIf="follower.bio">{{follower.bio}}</small>
+              </div>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-primary" routerLink="/profile/{{follower.username}}">
+                View Profile
+              </button>
+              <button class="btn btn-sm btn-outline-danger" (click)="removeFollower(follower)">
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="followersList.length === 0" class="text-center text-muted py-4">
+          <p>No followers yet</p>
+        </div>
+      </div>
+
+
+      <div *ngIf="showFollowingList && !isEditingProfile">
+        <div class="d-flex align-items-center mb-3">
+          <button class="btn btn-outline-secondary btn-sm me-3" (click)="hideUserLists()">
+            ← Back
+          </button>
+          <h4 class="mb-0">Following</h4>
+        </div>
+        <div class="list-group" *ngIf="followingList.length > 0">
+          <div class="list-group-item d-flex align-items-center justify-content-between"
+            *ngFor="let following of followingList">
+            <div class="d-flex align-items-center">
+              <img [src]="following.profilePicture || 'default.jpg'" class="rounded-circle me-3" alt="Avatar"
+                style="width: 40px; height: 40px; object-fit: cover;">
+              <div>
+                <h6 class="mb-0">{{following.username}}</h6>
+                <small class="text-muted">&#64;{{following.username}}</small>
+                <small class="text-muted d-block" *ngIf="following.bio">{{following.bio}}</small>
+              </div>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-primary" routerLink="/profile/{{following.username}}">
+                View Profile
+              </button>
+              <button class="btn btn-sm btn-outline-danger" (click)="unfollowUser(following)">
+                Unfollow
+              </button>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="followingList.length === 0" class="text-center text-muted py-4">
+          <p>Not following anyone yet</p>
+        </div>
+      </div>
+
+
+
+
+
+
+
+
+
+    </div>
+
+
+    <!-- Mobile Bottom Navigation (hidden on desktop) -->
+    <nav class="bottom-nav fixed-bottom d-lg-none">
+      <div class="d-flex justify-content-around py-2">
+        <button class="btn btn-link" [class.active]="activeTab === 'feed'" (click)="setActiveTab('feed')">
+          <i class="fas fa-home d-block"></i>
+          <small>Feed</small>
+        </button>
+        <button class="btn btn-link" [class.active]="activeTab === 'create'" (click)="setActiveTab('create')">
+          <i class="fas fa-plus d-block"></i>
+          <small>Create</small>
+        </button>
+        <button class="btn btn-link" [class.active]="activeTab === 'chat'" (click)="setActiveTab('chat')">
+          <i class="fas fa-comments d-block"></i>
+          <small>Chat</small>
+        </button>
+        <button class="btn btn-link position-relative" [class.active]="activeTab === 'notifications'"
+          (click)="setActiveTab('notifications')">
+          <i class="fas fa-bell d-block"></i>
+          <small>Notifications</small>
+          <span *ngIf="unreadNotificationCount > 0" class="notification-badge">{{unreadNotificationCount}}</span>
+        </button>
+        <button class="btn btn-link" [class.active]="activeTab === 'profile'" (click)="setActiveTab('profile')">
+          <i class="fas fa-user d-block"></i>
+          <small>Profile</small>
+        </button>
+      </div>
+    </nav>
+
+
+
+
+
+    <div class="modal fade show" style="display: block; z-index: 1050;" *ngIf="showDeleteConfirm">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+          style="background: white; border: 1px solid #dee2e6; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);">
+          <div class="modal-header" style="background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+            <h5 class="modal-title" style="color: #dc3545; font-weight: bold;">Delete Post</h5>
+          </div>
+          <div class="modal-body" style="padding: 1.5rem; background: white;">
+            <p style="color: #495057; margin-bottom: 0;">Are you sure you want to delete this post? This action cannot
+              be undone.</p>
+          </div>
+          <div class="modal-footer" style="background: #f8f9fa; border-top: 1px solid #dee2e6;">
+            <button type="button" class="btn btn-secondary" (click)="cancelDelete()"
+              style="background: #6c757d; border-color: #6c757d;">Cancel</button>
+            <button type="button" class="btn btn-danger" (click)="confirmDelete()"
+              style="background: #dc3545; border-color: #dc3545;">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop fade show" style="background-color: rgba(0, 0, 0, 0.5); z-index: 1040;"
+      *ngIf="showDeleteConfirm"></div>
+
+
+    <div class="modal fade show" style="display: block; z-index: 1050;" *ngIf="showDeleteCommentConfirm">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+          style="background: white; border: 1px solid #dee2e6; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);">
+          <div class="modal-header" style="background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+            <h5 class="modal-title" style="color: #dc3545; font-weight: bold;">Delete Comment</h5>
+          </div>
+          <div class="modal-body" style="padding: 1.5rem; background: white;">
+            <p style="color: #495057; margin-bottom: 0;">Are you sure you want to delete this comment? This action
+              cannot be undone.</p>
+          </div>
+          <div class="modal-footer" style="background: #f8f9fa; border-top: 1px solid #dee2e6;">
+            <button type="button" class="btn btn-secondary" (click)="cancelDeleteComment()"
+              style="background: #6c757d; border-color: #6c757d;">Cancel</button>
+            <button type="button" class="btn btn-danger" (click)="confirmDeleteComment()"
+              style="background: #dc3545; border-color: #dc3545;">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop fade show" style="background-color: rgba(0, 0, 0, 0.5); z-index: 1040;"
+      *ngIf="showDeleteCommentConfirm"></div>
+
+    <!-- Delete Post Confirmation Modal -->
+    <div class="modal fade show d-block" *ngIf="showDeleteConfirm" tabindex="-1"
+      style="background: rgba(0,0,0,0.5); z-index: 1050;">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <h5 class="modal-title">Delete Post?</h5>
+            <button type="button" class="btn-close" (click)="cancelDeletePost()"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to delete this post? This action cannot be undone.</p>
+          </div>
+          <div class="modal-footer border-0">
+            <button type="button" class="btn btn-outline-secondary" (click)="cancelDeletePost()">Cancel</button>
+            <button type="button" class="btn btn-danger" (click)="confirmDeletePost()">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

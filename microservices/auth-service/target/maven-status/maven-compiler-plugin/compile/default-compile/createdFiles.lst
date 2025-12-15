@@ -1,0 +1,12 @@
+com\revhub\auth\config\SecurityConfig.class
+com\revhub\auth\controller\ResetPasswordRequest.class
+com\revhub\auth\controller\AuthController.class
+com\revhub\auth\controller\ForgotPasswordRequest.class
+com\revhub\auth\entity\User.class
+com\revhub\auth\exception\GlobalExceptionHandler.class
+com\revhub\auth\service\EmailService.class
+com\revhub\auth\controller\LoginRequest.class
+com\revhub\auth\AuthServiceApplication.class
+com\revhub\auth\controller\RegisterRequest.class
+com\revhub\auth\repository\UserRepository.class
+com\revhub\auth\controller\VerifyOTPRequest.class

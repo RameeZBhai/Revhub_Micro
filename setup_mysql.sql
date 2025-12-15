@@ -1,0 +1,8 @@
+-- Setup MySQL databases and password
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';
+CREATE DATABASE IF NOT EXISTS revhub_auth;
+CREATE DATABASE IF NOT EXISTS revhub_users;
+CREATE DATABASE IF NOT EXISTS revhub_posts;
+CREATE DATABASE IF NOT EXISTS revhub_follows;
+CREATE DATABASE IF NOT EXISTS revhub_search;
+FLUSH PRIVILEGES;

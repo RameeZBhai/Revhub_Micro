@@ -1,0 +1,4 @@
+com\revhub\search\controller\UserSuggestion.class
+com\revhub\search\config\SecurityConfig.class
+com\revhub\search\controller\SearchController.class
+com\revhub\search\SearchServiceApplication.class

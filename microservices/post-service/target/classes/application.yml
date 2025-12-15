@@ -1,0 +1,55 @@
+server:
+  port: 8083
+  tomcat:
+    max-swallow-size: 50MB
+  max-http-header-size: 50MB
+
+spring:
+  application:
+    name: post-service
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        service-name: ${spring.application.name}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/revhub_posts
+      auto-index-creation: true
+
+app:
+  upload-dir: ${user.home}/revhub_uploads
+
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: post-group
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      show-details: always
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  tracing:
+    enabled: false
+    sampling:
+      probability: 1.0

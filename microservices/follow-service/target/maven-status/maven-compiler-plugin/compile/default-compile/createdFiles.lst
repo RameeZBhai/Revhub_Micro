@@ -1,0 +1,6 @@
+com\revhub\follow\controller\FollowController.class
+com\revhub\follow\repository\FollowRepository.class
+com\revhub\follow\config\SecurityConfig.class
+com\revhub\follow\model\Follow.class
+com\revhub\follow\FollowServiceApplication.class
+com\revhub\follow\service\FollowProducer.class

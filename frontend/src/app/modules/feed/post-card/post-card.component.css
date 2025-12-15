@@ -1,0 +1,44 @@
+.post-card {
+  padding: 20px;
+  border: 2px solid rgba(20, 184, 166, 0.2);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(240, 253, 250, 0.8), rgba(255, 255, 255, 0.9));
+  box-shadow: 0 4px 20px rgba(20, 184, 166, 0.1);
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.post-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(20, 184, 166, 0.2);
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+.post-card .btn-primary {
+  background: linear-gradient(135deg, #14B8A6, #F97316);
+  border: none;
+  border-radius: 25px;
+  padding: 8px 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.post-card .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(20, 184, 166, 0.3);
+}
+
+.post-card .btn-outline-primary {
+  border: 2px solid #14B8A6;
+  color: #14B8A6;
+  border-radius: 25px;
+  padding: 8px 20px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.post-card .btn-outline-primary:hover {
+  background: #14B8A6;
+  color: white;
+  transform: translateY(-2px);
+}

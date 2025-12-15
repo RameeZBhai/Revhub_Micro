@@ -1,0 +1,117 @@
+server:
+  port: 8080
+  tomcat:
+    max-swallow-size: 50MB
+  max-http-header-size: 50MB
+
+spring:
+  application:
+    name: api-gateway
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: 8500
+      discovery:
+        enabled: true
+        service-name: ${spring.application.name}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      default-filters:
+        - name: CircuitBreaker
+          args:
+            name: myCircuitBreaker
+            fallbackUri: forward:/fallback
+      routes:
+        - id: auth-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+        - id: user-service
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/profile/**
+          filters:
+            - StripPrefix=1
+        - id: user-suggestions
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/suggestions
+          filters:
+            - StripPrefix=1
+        - id: notification-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - StripPrefix=1
+        - id: post-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/posts/**
+          filters:
+            - StripPrefix=1
+        - id: chat-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/chat/**
+          filters:
+            - StripPrefix=1
+        - id: follow-service
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/follow/**
+          filters:
+            - StripPrefix=1
+        - id: search-service
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/search/**
+          filters:
+            - StripPrefix=1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway,prometheus
+  endpoint:
+    health:
+      show-details: always
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  tracing:
+    enabled: false
+    sampling:
+      probability: 1.0
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      myCircuitBreaker:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
+        minimumNumberOfCalls: 5
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+  timelimiter:
+    instances:
+      myCircuitBreaker:
+        timeoutDuration: 10s

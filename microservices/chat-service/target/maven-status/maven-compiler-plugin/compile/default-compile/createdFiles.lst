@@ -1,0 +1,10 @@
+com\revhub\chat\service\ChatConsumer.class
+com\revhub\chat\controller\ChatController.class
+com\revhub\chat\controller\RoomRequest.class
+com\revhub\chat\controller\ChatMessage.class
+com\revhub\chat\controller\Message.class
+com\revhub\chat\controller\MessageRepository.class
+com\revhub\chat\ChatServiceApplication.class
+com\revhub\chat\config\SecurityConfig.class
+com\revhub\chat\config\WebSocketConfig.class
+com\revhub\chat\service\ChatProducer.class

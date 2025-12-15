@@ -1,0 +1,43 @@
+.profile-header {
+  padding: 25px;
+  background: linear-gradient(135deg, #14B8A6, #5EEAD4);
+  border-bottom: 3px solid rgba(249, 115, 22, 0.3);
+  border-radius: 0 0 20px 20px;
+  color: white;
+  box-shadow: 0 4px 20px rgba(20, 184, 166, 0.2);
+}
+
+.profile-header h1, .profile-header h2, .profile-header h3 {
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header .btn {
+  border-radius: 25px;
+  font-weight: 600;
+  padding: 10px 25px;
+  transition: all 0.3s ease;
+}
+
+.profile-header .btn-light {
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  color: #14B8A6;
+}
+
+.profile-header .btn-light:hover {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header .btn-outline-light {
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  color: white;
+}
+
+.profile-header .btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: white;
+  transform: translateY(-2px);
+}
