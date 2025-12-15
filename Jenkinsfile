@@ -3,9 +3,10 @@ pipeline {
     
     environment {
         DEPLOY_PATH = 'C:\\RevHub\\deploy'
-        AWS_REGION = 'us-east-1'
-        S3_BUCKET = 'revhub-deployment'
-        OPENSEARCH_ENDPOINT = 'search-revhub-search-xyz.us-east-1.es.amazonaws.com'
+        AWS_REGION = 'us-east-2'
+        S3_BUCKET = 'revhub-showcase-rameezshaik'
+        EC2_HOST = '3.139.94.192'
+        OPENSEARCH_ENDPOINT = 'search-revhub-search-xyz.us-east-2.es.amazonaws.com'
     }
     
     stages {
