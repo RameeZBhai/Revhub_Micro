@@ -70,7 +70,12 @@ pipeline {
                 expression { params.DEPLOY_TO_AWS == true }
             }
             steps {
-                withCredentials([aws(credentialsId: 'aws-credentials', region: "${AWS_REGION}")]) {
+                withCredentials([string(credentialsId: 'aws-credentials', variable: 'AWS_CREDS')]) {
+                    script {
+                        def creds = AWS_CREDS.split(':')
+                        env.AWS_ACCESS_KEY_ID = creds[0]
+                        env.AWS_SECRET_ACCESS_KEY = creds[1]
+                    }
                     script {
                         // Upload JARs to S3
                         bat "aws s3 sync ${DEPLOY_PATH} s3://${S3_BUCKET}/jars/"
